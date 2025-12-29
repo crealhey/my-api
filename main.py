@@ -25,9 +25,9 @@ load_dotenv()
 
 app = FastAPI()
 
-SHARED_SECRET = os.getenv("DWINSHAREDSECRET")
+SHARED_SECRET = os.getenv("FIMSHAREDSECRET")
 if not SHARED_SECRET:
-    raise ValueError("DWINSHAREDSECRET not set in environment variables.")
+    raise ValueError("FIMSHAREDSECRET not set in environment variables.")
 SHARED_SECRET = SHARED_SECRET.encode()
 
 init_db()
@@ -50,12 +50,12 @@ class ISO20022Webhook(BaseModel):
 @app.post("/webhook")
 async def receive_webhook(
     request: Request,
-    x_dwin_signature: str = Header(None)
+    x_fim_signature: str = Header(None)
 ):
     # Verify signature
     raw_body = await request.body()
     expected_sig = hmac.new(SHARED_SECRET, raw_body, hashlib.sha256).hexdigest()
-    if x_dwin_signature != expected_sig:
+    if x_fim_signature != expected_sig:
         logger.warning("Invalid signature detected.")
         raise HTTPException(status_code=401, detail="Invalid signature")
 
@@ -108,3 +108,4 @@ async def receive_webhook(
             })
 
     return {"status": "processed", "results": results}
+
